@@ -1,0 +1,79 @@
+#include <iostream>
+#include <iomanip>
+#include <vector>
+#include <string>
+#include <algorithm> // Included for sorting
+
+using namespace std;
+
+struct Job {
+    string id;
+    int arrival;
+    int burst;
+    int completion;
+    int turnaround;
+    int waiting;
+};
+
+int main() {
+    int num_jobs;
+    cout << "Enter the number of processes: ";
+    cin >> num_jobs;
+
+    vector<Job> jobs(num_jobs);
+
+    cout << "Enter Process ID (letters or numbers), Arrival Time, and Burst Time (space-separated):\n";
+    for (int i = 0; i < num_jobs; i++) {
+        cout << "Process " << (i + 1) << ": ";
+        cin >> jobs[i].id >> jobs[i].arrival >> jobs[i].burst;
+    }
+
+    // Sort jobs by arrival time using a lambda function
+    sort(jobs.begin(), jobs.end(), [](const Job& a, const Job& b) {
+        return a.arrival < b.arrival;
+    });
+
+    int current_time = 0;
+    float total_wait_time = 0;
+    float total_turnaround_time = 0;
+
+    for (int i = 0; i < num_jobs; i++) {
+        // Handle idle time appropriately
+        if (current_time < jobs[i].arrival) {
+            current_time = jobs[i].arrival;
+        }
+        jobs[i].completion = current_time + jobs[i].burst;
+        jobs[i].turnaround = jobs[i].completion - jobs[i].arrival;
+        jobs[i].waiting = jobs[i].turnaround - jobs[i].burst;
+        current_time = jobs[i].completion;
+
+        total_wait_time += jobs[i].waiting;
+        total_turnaround_time += jobs[i].turnaround;
+    }
+
+    cout << "\nProcess Results:\n";
+    cout << left << setw(12) << "Process ID"
+         << setw(15) << "Arrival Time"
+         << setw(12) << "Burst Time"
+         << setw(18) << "Completion Time"
+         << setw(18) << "Turnaround Time"
+         << setw(12) << "Waiting Time" << endl;
+
+    for (const auto& job : jobs) {
+        cout << setw(12) << job.id
+             << setw(15) << job.arrival
+             << setw(12) << job.burst
+             << setw(18) << job.completion
+             << setw(18) << job.turnaround
+             << setw(12) << job.waiting << endl;
+    }
+
+    float average_wait_time = total_wait_time / num_jobs;
+    float average_turnaround_time = total_turnaround_time / num_jobs;
+
+    cout << "\nAverage Times:\n";
+    cout << "Average Waiting Time: " << average_wait_time << endl;
+    cout << "Average Turnaround Time: " << average_turnaround_time << endl;
+
+    return 0;
+}
